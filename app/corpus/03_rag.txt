@@ -1,0 +1,23 @@
+Retrieval-Augmented Generation (RAG)
+
+Retrieval-Augmented Generation (RAG) is an AI architecture pattern that combines a retrieval system (information retrieval) with a generative large language model. Introduced by Lewis et al. at Facebook AI Research in 2020, RAG dramatically improves the factual accuracy and knowledge currency of LLM outputs.
+
+How RAG Works:
+1. Indexing Phase: A document corpus is chunked, embedded into dense vectors, and stored in a vector database (e.g., FAISS, Pinecone, Weaviate, Chroma).
+2. Retrieval Phase: Given a user query, the retrieval system embeds the query and performs approximate nearest-neighbor search to find the top-k most semantically similar document chunks.
+3. Augmentation Phase: The retrieved chunks are concatenated with the user's query to form an augmented prompt.
+4. Generation Phase: The LLM receives the augmented prompt and generates an answer grounded in the provided context.
+
+Key Benefits of RAG:
+- Reduces hallucinations: The LLM is constrained to use retrieved evidence.
+- Knowledge currency: External knowledge bases can be updated without retraining the model.
+- Attribution: Answers can be traced back to source documents.
+- Cost efficiency: Cheaper than fine-tuning for knowledge injection.
+
+RAG Variants:
+- Naive RAG: Single retrieval pass before generation.
+- Advanced RAG: Pre-retrieval query rewriting, post-retrieval reranking.
+- Modular RAG: Flexible compositions of retrieval and generation steps.
+- Agentic RAG: LLM decides when and what to retrieve dynamically.
+
+RAG is now the dominant architecture for enterprise-grade question-answering systems, customer support bots, legal research tools, and medical knowledge systems.

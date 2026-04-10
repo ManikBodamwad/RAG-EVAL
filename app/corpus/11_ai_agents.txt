@@ -1,0 +1,32 @@
+AI Agents and Autonomous Systems
+
+AI agents are systems that use large language models as a reasoning engine to autonomously plan, use tools, and complete multi-step tasks with minimal human intervention. The term "agentic AI" refers to the emerging frontier where LLMs move from passive response generators to active problem-solvers.
+
+Core Components of an AI Agent:
+1. Brain (LLM): The reasoning engine that decides what to do next given the current context and goal.
+2. Memory: Stores past interactions in context (short-term) or in a vector database (long-term).
+3. Planning: Decomposes complex goals into actionable sub-tasks.
+4. Tools: External APIs, databases, code interpreters, web browsers that the agent can call.
+5. Action: Executes tool calls or generates a final response.
+
+Agent Architectures:
+
+ReAct (Reason + Act):
+The simplest and most widely deployed agentic loop. The LLM alternates between reasoning ("Thought") and tool-use ("Action"), with tool outputs feeding back as "Observations." Continues until the task is complete.
+
+Plan-and-Execute:
+The planner LLM creates a full plan first; an executor LLM executes each step. Better for complex tasks but less adaptive to unexpected intermediate results.
+
+Multi-Agent Systems:
+Multiple specialized agents collaborate. Common patterns:
+- Supervisor: One orchestrator agent delegates to specialist agents.
+- Swarm: Agents communicate peer-to-peer via shared memory.
+- Parliament: Agents debate and vote to reach a consensus.
+
+Key Challenges:
+- Tool call reliability: LLMs sometimes call tools incorrectly or in the wrong order.
+- Context window limits: Long agentic loops overflow the context window.
+- Hallucinated tool calls: The agent might invent tool arguments that don't exist.
+- Error recovery: Agents need to detect failures and retry or replanning.
+
+Frameworks: LangChain/LangGraph, AutoGen, CrewAI, Swarm (OpenAI), LlamaIndex Agents.

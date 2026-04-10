@@ -1,0 +1,33 @@
+LLM Hallucinations and Factual Accuracy
+
+Hallucination in large language models refers to the generation of text that is fluent, confident-sounding, and syntactically correct, but factually incorrect, fabricated, or unsupported by the provided context or world knowledge. It is one of the most critical reliability challenges in deploying AI systems.
+
+Types of Hallucinations:
+
+1. Factual Hallucinations (Closed-Domain):
+The model contradicts facts in its provided context or training data. Example: citing a real paper with a wrong author, date, or conclusion.
+
+2. Open-Domain Hallucinations:
+The model fabricates information not present anywhere — inventing citations, URLs, people, or statistics.
+
+3. Intrinsic vs. Extrinsic Hallucinations:
+- Intrinsic: The output directly contradicts the input source material.
+- Extrinsic: The output contains information that cannot be verified or falsified from the source material.
+
+Root Causes:
+- Training data noise and conflicting facts.
+- Distributional shift between pre-training and deployment.
+- Overconfident generation: the model interpolates between related concepts.
+- Insufficient context: the model fills gaps with plausible-sounding invented content.
+- RLHF pressure to sound helpful, encouraging guessing over admitting uncertainty.
+
+Mitigation Techniques:
+- Retrieval-Augmented Generation (RAG): Ground responses in retrieved evidence.
+- Faithfulness evaluation: Automatically score whether answers are grounded in context.
+- Citation generation: Force the model to cite specific passages.
+- Constitutional AI: Train models to self-critique and revise hallucinated outputs.
+- Temperature reduction: Deterministic (temperature=0) sampling reduces creative fabrication.
+- Calibration: Training models to express uncertainty ("I don't know").
+
+Measuring Hallucinations:
+Ragas Faithfulness metric: breaks down an answer into atomic claims and checks whether each is supported by the retrieved context using an LLM judge, producing a score in [0, 1].

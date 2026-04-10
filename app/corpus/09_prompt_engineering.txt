@@ -1,0 +1,28 @@
+Prompt Engineering
+
+Prompt engineering is the practice of designing and optimizing input prompts to elicit the best possible responses from large language models without modifying any model weights. It is a core skill in AI engineering, enabling practitioners to improve model output quality dramatically with no additional compute cost.
+
+Fundamental Techniques:
+
+1. Zero-Shot Prompting:
+The model is given a task description and asked to solve it without any examples. Works well for tasks the LLM was instruction-tuned on.
+
+2. Few-Shot Prompting:
+The prompt includes 2-8 demonstration examples (input-output pairs) that illustrate the desired format and reasoning style. Dramatically improves performance on complex tasks.
+
+3. Chain-of-Thought (CoT) Prompting:
+Includes intermediate reasoning steps in the prompt or asks the model to "think step by step." Significantly improves performance on math, logic, and multi-step reasoning tasks. Introduced by Wei et al. (2022).
+
+4. ReAct (Reasoning + Acting):
+Combines chain-of-thought reasoning with tool-use actions. The model alternates between "Thought" (reasoning), "Action" (tool call), and "Observation" (tool output). The foundation of modern AI agents.
+
+5. System Prompts:
+In chat models, the system prompt defines the model's persona, constraints, and guardrails. Poorly designed system prompts lead to jailbreaks, hallucinations, and inconsistent behavior.
+
+Advanced Techniques:
+- Tree of Thoughts: Explores multiple reasoning paths in parallel.
+- Self-Consistency: Samples multiple CoT answers and takes the majority vote.
+- Least-to-Most Prompting: Breaks problems into subproblems, solved sequentially.
+- Directional Stimulus Prompting: Provides hints or clues to guide reasoning.
+
+Prompt engineering is a competitive differentiator in production AI systems. Even 10-15% improvements in task accuracy from prompt optimization often have massive business impact.

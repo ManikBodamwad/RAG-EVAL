@@ -1,0 +1,27 @@
+Vector Databases and Embeddings
+
+Vector databases are specialized data stores designed to efficiently store, index, and search high-dimensional vector representations (embeddings). They are a critical infrastructure component of modern AI applications, particularly for semantic search, recommendation systems, and RAG pipelines.
+
+What are Embeddings?
+Embeddings are dense numerical vector representations of data (text, images, audio, code) produced by neural network encoders. Semantically similar items have vectors that are close to each other in the high-dimensional vector space. A text embedding model (e.g., sentence-transformers/all-MiniLM-L6-v2) maps sentences to 384-dimensional vectors.
+
+Similarity Search:
+Vector databases support approximate nearest-neighbor (ANN) search to find the k most similar vectors to a query vector. Common similarity metrics:
+- Cosine similarity: Measures the angle between two vectors; robust to magnitude differences.
+- Euclidean distance (L2): Straight-line distance; sensitive to magnitude.
+- Dot product: Efficient but requires normalized vectors for meaningful comparison.
+
+Popular Vector Databases:
+- FAISS (Facebook AI Similarity Search): An open-source library for efficient similarity search. CPU and GPU backends. Ideal for local development and research.
+- Pinecone: Fully managed cloud-native vector database with automatic scaling.
+- Weaviate: Open-source vector database with GraphQL API and multi-modal support.
+- Chroma: Lightweight, developer-friendly, embedded vector store popular in LLM applications.
+- Qdrant: High-performance Rust-based vector database with filtering support.
+- pgvector: PostgreSQL extension that adds vector similarity operations to a standard relational database.
+
+FAISS Index Types:
+- Flat (brute force): Exact search, no compression, O(n) query time.
+- IVF (Inverted File Index): Partitions vectors into clusters; faster but approximate.
+- HNSW (Hierarchical Navigable Small World): Graph-based; excellent speed-recall tradeoff.
+
+In RAG systems, the vector database stores embeddings of document chunks, enabling the retriever to find relevant context for any query in milliseconds.

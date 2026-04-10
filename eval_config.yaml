@@ -1,0 +1,57 @@
+# ─────────────────────────────────────────────────────────────────
+# eval_config.yaml — RAG Evaluation Regression Gate Configuration
+# ─────────────────────────────────────────────────────────────────
+# These thresholds define the quality bar for the CI gate.
+# If ANY metric falls below its threshold, the GitHub Actions
+# workflow exits with code 1, blocking the PR from merging.
+# ─────────────────────────────────────────────────────────────────
+
+thresholds:
+  # Faithfulness: Is the answer grounded in retrieved context?
+  # Range [0.0, 1.0] — measures hallucination rate
+  faithfulness_min: 0.75
+
+  # Context Relevance: Is the retrieved context relevant to the question?
+  # Range [0.0, 1.0] — measures retriever quality
+  context_relevance_min: 0.70
+
+  # Answer Correctness: How close is the answer to the ground truth?
+  # Range [0.0, 1.0] — compares against golden dataset
+  answer_correctness_min: 0.65
+
+  # Token Efficiency: Quality per output token (custom SRE metric)
+  # Range [0.0, ~1.0] — penalizes verbose answers with similar quality
+  token_efficiency_min: 0.50
+
+# ─────────────────────────────────────────────────────────────────
+# Model Configuration
+# ─────────────────────────────────────────────────────────────────
+model:
+  # LLM judge used by Ragas to evaluate metrics
+  # Hot-swappable via JUDGE_MODEL environment variable
+  judge: "groq/llama-3.3-70b-versatile"
+
+  # Generator LLM used by the mock RAG pipeline to produce answers
+  # Hot-swappable via RAG_MODEL environment variable
+  rag_generator: "groq/llama-3.3-70b-versatile"
+
+  # Embedding model used for FAISS vector store (local, no API calls)
+  embeddings: "sentence-transformers/all-MiniLM-L6-v2"
+
+# ─────────────────────────────────────────────────────────────────
+# Dataset Configuration
+# ─────────────────────────────────────────────────────────────────
+dataset:
+  # Hugging Face Hub dataset repository (public, no auth needed to load)
+  hf_repo: "manikbodamwad/rag-eval-golden"
+  split: "train"
+  # Fallback to local file if HF Hub is unavailable
+  local_fallback: "golden_dataset.jsonl"
+
+# ─────────────────────────────────────────────────────────────────
+# Reporting Configuration
+# ─────────────────────────────────────────────────────────────────
+reporting:
+  output_file: "eval_report.json"
+  # Number of decimal places in the report
+  score_precision: 4

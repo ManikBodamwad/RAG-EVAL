@@ -1,0 +1,30 @@
+BERT and Encoder-Only Transformer Models
+
+BERT (Bidirectional Encoder Representations from Transformers) was introduced by Google AI in 2018 and fundamentally changed natural language processing. Unlike GPT-style models that generate text autoregressively, BERT uses the full Transformer encoder to produce deeply bidirectional contextual representations.
+
+Architecture:
+BERT uses only the Transformer encoder stack — no decoder. It processes the entire input sequence simultaneously, allowing each token to attend to all other tokens in both directions (left and right context). This bidirectionality makes BERT representations richer for understanding tasks than unidirectional models.
+
+Pre-training Tasks:
+1. Masked Language Modeling (MLM): Randomly mask 15% of input tokens; train the model to predict them. Forces the model to use both left and right context — the source of bidirectionality.
+2. Next Sentence Prediction (NSP): Given two sentences, predict whether the second follows the first in the original text. Captures inter-sentence relationships.
+
+Special Tokens:
+- [CLS]: Classification token prepended to every input; its final hidden state is used for classification tasks.
+- [SEP]: Separator token between sentence pairs.
+- [MASK]: Replaces masked tokens during MLM pre-training.
+
+Variants and Successors:
+- RoBERTa: Removes NSP, trains longer with more data — significantly stronger.
+- DistilBERT: 40% smaller, 60% faster, 97% of BERT performance via knowledge distillation.
+- ALBERT: Parameter-sharing across layers; far fewer parameters.
+- DeBERTa: Uses disentangled attention with separate content and position embeddings.
+
+Primary Use Cases:
+- Text classification (sentiment, topic)
+- Named entity recognition (NER)
+- Question answering (extractive)
+- Semantic similarity and embeddings
+- Sentence encoding for vector search
+
+BERT-based sentence transformers (e.g., all-MiniLM-L6-v2) are the most widely used embedding models for RAG systems, semantic search, and document clustering.

@@ -1,0 +1,44 @@
+CI/CD for Machine Learning and LLM Systems
+
+Continuous Integration and Continuous Deployment (CI/CD) for ML systems extends traditional software CI/CD with additional concerns around data validation, model evaluation, and quality gating. For LLM-powered applications, a production-grade CI/CD pipeline is the difference between confidently shipping AI improvements and silently shipping regressions.
+
+Traditional CI/CD vs. ML CI/CD:
+
+Traditional CI/CD gates:
+- Unit tests pass
+- Integration tests pass
+- Code coverage above threshold
+- Linting and type checking pass
+
+ML CI/CD adds:
+- Data validation: Schema checks, distribution drift detection on new training data.
+- Model evaluation: Automated scoring on a held-out golden dataset.
+- Quality gate: Block deployment if accuracy, F1, or LLM evaluation metrics drop.
+- Performance benchmarks: Latency, throughput, and memory regressions.
+
+LLM-Specific CI/CD:
+
+1. Prompt Regression Testing:
+Every PR that touches a prompt or system message triggers automated evaluation against a golden Q&A dataset. Exit code 1 blocks the merge if quality drops.
+
+2. RAG Pipeline Evaluation:
+Changes to the retriever (chunking strategy, embedding model, top-k) or generator (prompt, model) trigger a full RAG evaluation run measuring:
+- Context Relevance: Did the retriever return useful documents?
+- Faithfulness: Is the LLM staying grounded in retrieved context?
+- Answer Correctness: Is the generated answer accurate vs. ground truth?
+
+3. Score Trend Monitoring:
+Evaluation scores are pushed to a time-series database (Prometheus, Grafana Cloud, Datadog) after every CI run. A declining score trend across PRs signals systematic quality erosion — even if each individual PR passes its gate.
+
+4. PR Comments with Quality Reports:
+After each evaluation run, an automated bot posts a structured Markdown report to the PR with per-metric scores, pass/fail badges, and a comparison to the main branch baseline.
+
+5. Golden Dataset Versioning:
+The evaluation golden dataset is version-controlled (or hosted on Hugging Face Hub with a pinned commit hash) so that evaluation results are reproducible and comparable across time.
+
+Tools and Infrastructure:
+- GitHub Actions / GitLab CI: Workflow orchestration.
+- Ragas: LLM evaluation metrics.
+- DVC (Data Version Control): Dataset and model artifact versioning.
+- MLflow / Weights & Biases: Experiment tracking and model registry.
+- Grafana Cloud: Score trend dashboards.

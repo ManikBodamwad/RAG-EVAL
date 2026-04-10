@@ -1,0 +1,63 @@
+[build-system]
+requires = ["setuptools>=70.0", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "rag-eval"
+version = "0.1.0"
+description = "CI/CD-integrated RAG evaluation pipeline — quality gate for AI chatbots using Ragas + Groq LLM judge"
+readme = "README.md"
+license = { text = "MIT" }
+requires-python = ">=3.10"
+authors = [
+    { name = "Manik Bodamwad" }
+]
+keywords = ["rag", "evaluation", "llm", "ragas", "ci-cd", "quality-gate", "groq"]
+classifiers = [
+    "Development Status :: 4 - Beta",
+    "Intended Audience :: Developers",
+    "License :: OSI Approved :: MIT License",
+    "Programming Language :: Python :: 3",
+    "Programming Language :: Python :: 3.10",
+    "Programming Language :: Python :: 3.11",
+    "Programming Language :: Python :: 3.12",
+    "Topic :: Scientific/Engineering :: Artificial Intelligence",
+]
+dependencies = [
+    "ragas>=0.2.0",
+    "langchain>=0.3.0",
+    "langchain-community>=0.3.0",
+    "langchain-huggingface>=0.1.0",
+    "faiss-cpu>=1.8.0",
+    "litellm>=1.40.0",
+    "datasets>=2.20.0",
+    "click>=8.1.0",
+    "pyyaml>=6.0",
+    "requests>=2.32.0",
+    "rich>=13.0.0",
+    "sentence-transformers>=3.0.0",
+    "groq>=0.9.0",
+]
+
+[project.optional-dependencies]
+dev = [
+    "build>=1.0.0",
+    "twine>=5.0.0",
+    "pytest>=8.0.0",
+    "pytest-asyncio>=0.23.0",
+]
+
+[project.scripts]
+rag-eval = "rag_eval.cli:cli"
+
+[project.urls]
+Homepage = "https://github.com/manikbodamwad/rag-eval"
+Repository = "https://github.com/manikbodamwad/rag-eval"
+Issues = "https://github.com/manikbodamwad/rag-eval/issues"
+
+[tool.setuptools.packages.find]
+where = ["."]
+include = ["rag_eval*"]
+
+[tool.setuptools.package-data]
+rag_eval = ["py.typed"]

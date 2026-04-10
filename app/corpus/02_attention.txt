@@ -1,0 +1,18 @@
+Attention Mechanisms in Deep Learning
+
+Attention is a mechanism that allows neural networks to focus on different parts of an input when producing each part of the output. It was originally introduced in the context of machine translation to help decoder networks selectively attend to the relevant parts of the encoder's hidden states.
+
+Self-Attention (Intra-Attention):
+Self-attention allows a sequence to attend to itself. For each position in a sequence, it computes a weighted sum of all other positions based on their relevance. The mechanism operates using three learned projections called Query (Q), Key (K), and Value (V):
+  - Score(Q, K) = QK^T / sqrt(d_k)
+  - Attention(Q, K, V) = softmax(Score) * V
+
+The scaling factor sqrt(d_k) prevents the dot products from growing too large, stabilizing gradients during training.
+
+Multi-Head Attention:
+Instead of performing a single attention function, multi-head attention runs attention in parallel across multiple "heads," each learning its own Q, K, V projections. The outputs are concatenated and projected. This allows the model to simultaneously attend to information from different positions at different representation subspaces.
+
+Cross-Attention:
+In encoder-decoder Transformers, cross-attention allows decoder positions to attend to encoder positions. The decoder's Q comes from its own states, while K and V come from the encoder output.
+
+Attention has enabled unprecedented capabilities in NLP: understanding long-range context, resolving coreferences, capturing syntactic dependencies, and reasoning across multiple documents or code repositories. It is the fundamental computational primitive of modern AI systems.

@@ -1,0 +1,15 @@
+Transformers in Natural Language Processing
+
+The Transformer architecture was introduced by Vaswani et al. in the landmark 2017 paper "Attention Is All You Need." It revolutionized natural language processing by eliminating the need for recurrent or convolutional neural networks, relying instead entirely on self-attention mechanisms.
+
+A standard Transformer consists of an encoder and a decoder stack, each composed of multiple identical layers. Each encoder layer contains two sub-layers: a multi-head self-attention mechanism and a position-wise fully connected feed-forward network. Residual connections and layer normalization are applied around each sub-layer.
+
+The Transformer processes entire sequences in parallel, which dramatically accelerates training compared to recurrent neural networks that must process sequences token by token. This parallelism allows Transformers to scale effectively to massive datasets and model sizes.
+
+Key properties of Transformers:
+- Self-attention allows each position to attend to all positions in the input, capturing long-range dependencies.
+- Multi-head attention performs attention in parallel across different representation subspaces, giving the model richer representation capacity.
+- Positional encodings inject sequence order information since the architecture itself is permutation-invariant.
+- The feed-forward sub-layers independently process each position, adding non-linearity.
+
+Transformers are the foundation of virtually all modern large language models, including BERT, GPT-3, GPT-4, LLaMA, PaLM, and many others. They are used for text classification, machine translation, text generation, question answering, and summarization tasks.

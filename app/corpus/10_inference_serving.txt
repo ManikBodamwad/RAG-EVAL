@@ -1,0 +1,33 @@
+Large Language Model Inference and Serving
+
+LLM inference is computationally demanding because generating tokens is an autoregressive process — each new token requires a full forward pass through the model. Serving LLMs efficiently at scale is a core MLOps challenge.
+
+Key Inference Concepts:
+
+1. KV Cache (Key-Value Cache):
+During autoregressive generation, the attention mechanism computes Key and Value matrices for all previous tokens at each step. The KV cache stores these intermediate results so they don't need to be recomputed. It dramatically reduces inference FLOPs at the cost of GPU memory.
+- Problem: KV cache grows with sequence length, limiting batch size.
+- Solution: PagedAttention (used in vLLM) manages KV cache memory like virtual memory pages, enabling dramatically higher throughput.
+
+2. Batching Strategies:
+- Static batching: Fixed-size batches, simple but inefficient (slow requests block fast ones).
+- Continuous batching (in-flight batching): New requests are added to the batch as soon as a slot opens. This is the industry standard (used in vLLM, TGI, TensorRT-LLM).
+
+3. Quantization:
+Reducing the numerical precision of model weights and activations:
+- FP16/BF16: Half-precision; standard for serving.
+- INT8: Speed up without significant quality loss for many models.
+- INT4 (GPTQ, AWQ): 4-bit quantization; 4x memory reduction with small accuracy degradation.
+- 4-bit NF4: Used by QLoRA for fine-tuning quantized models.
+
+4. Speculative Decoding:
+A small draft model generates candidate tokens in parallel, and the large target model verifies them in a single forward pass. Achieves ~2-3x speedup on tasks with repetitive or predictable outputs.
+
+5. LPU (Language Processing Unit):
+Groq's custom chip architecture designed specifically for LLM inference. It achieves extremely low latency (sub-millisecond per token) and very high throughput by using a deterministic execution model that eliminates memory bottlenecks.
+
+Serving Frameworks:
+- vLLM: Open-source, state-of-the-art throughput via PagedAttention.
+- TGI (Text Generation Inference): Hugging Face's production serving framework.
+- TensorRT-LLM: NVIDIA's optimized inference library for A100/H100 GPUs.
+- Groq Cloud: Managed LPU inference — currently the fastest available LLM inference service.

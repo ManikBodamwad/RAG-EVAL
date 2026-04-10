@@ -1,0 +1,37 @@
+MLOps and LLMOps: Operationalizing AI Systems
+
+MLOps (Machine Learning Operations) is the discipline of applying DevOps principles — automation, monitoring, reproducibility, and continuous deployment — to the machine learning lifecycle. LLMOps extends this to the unique challenges of large language models.
+
+The ML Lifecycle:
+1. Data ingestion → 2. Feature engineering → 3. Model training → 4. Evaluation → 5. Deployment → 6. Monitoring → 7. Retraining
+
+Traditional MLOps Challenges:
+- Data versioning: Datasets change silently, making experiments irreproducible.
+- Model versioning: Multiple competing model versions in production.
+- Pipeline orchestration: Complex multi-step pipelines need dependency management (MLflow, Kubeflow, Airflow).
+- Experiment tracking: Hundreds of hyperparameter combinations; need systematic logging (Weights & Biases, MLflow, Neptune).
+
+LLMOps-Specific Challenges:
+
+1. Prompt Versioning:
+Prompts are code. Changes must be versioned, tested, and deployed with CI/CD controls. A prompt regression is as dangerous as a code regression.
+
+2. Evaluation Gates:
+Unlike traditional ML where metrics are deterministic, LLM evaluation requires LLM-as-a-judge scoring. Each CI run must evaluate the model's outputs against a golden dataset before deployment.
+
+3. Observability:
+- Trace every LLM call with input, output, latency, cost, and token counts.
+- Alert on latency spikes, error rate increases, and quality degradation.
+- Tools: LangSmith, Arize, Langfuse, Helicone, Phoenix.
+
+4. Cost Attribution:
+Track which features, users, or teams are consuming the most tokens to control runaway API costs.
+
+5. Shadow Evaluation / A/B Testing:
+Route a small fraction of traffic to a new model/prompt version; compare quality and cost metrics before full rollout.
+
+RAG-Specific MLOps:
+- Corpus versioning: Track document collection changes with metadata.
+- Embedding drift: If the embedding model changes, all vectors must be recomputed.
+- Retrieval monitoring: Log retrieved chunks to detect relevance degradation.
+- Re-indexing pipelines: Automated nightly or event-driven FAISS index rebuilds.

@@ -1,0 +1,30 @@
+Mixture of Experts (MoE) Architecture
+
+Mixture of Experts (MoE) is a model architecture that conditionally activates only a fraction of its total parameters for each input token, enabling dramatically larger model capacity without a proportional increase in computational cost.
+
+How MoE Works:
+In a standard Transformer, every token passes through every feed-forward network (FFN) layer. In an MoE Transformer, each FFN layer is replaced with multiple parallel "expert" FFNs and a learned router (gating network).
+
+For each token:
+1. The router network (a small linear layer + softmax) computes a probability distribution over all experts.
+2. Only the top-K experts (typically K=1 or K=2) are activated for that token.
+3. The expert outputs are weighted by their router probabilities and summed.
+
+Key Formula:
+  output = Σ(router_score_i × Expert_i(token))   for top-K experts i
+
+Sparse Activation:
+An MoE model with 8 experts and top-2 routing activates only 25% of parameters per token. This means a 56B parameter MoE model has the inference cost of a ~14B dense model while having the capacity of the full 56B.
+
+Load Balancing:
+Without regularization, routers collapse and route all tokens to the same 1-2 experts. An auxiliary load balancing loss penalizes uneven expert utilization during training.
+
+Notable MoE Models:
+- Mixtral 8x7B: 8 experts, top-2 routing. 46.7B total params, ~12.9B active per token. Outperforms Llama-2-70B on most benchmarks while being 6x faster at inference.
+- Mixtral 8x22B: 141B total params, ~39B active.
+- GPT-4: Widely believed (unconfirmed) to use a MoE architecture with ~8 experts.
+- DeepSeek-V3: MoE with 671B total parameters, 37B active per token, efficient training.
+
+Trade-offs:
+- Pros: Much higher capacity per FLOP; better quality for a given inference budget.
+- Cons: Larger GPU memory footprint (all parameters must be loaded); communication overhead in multi-GPU serving due to expert parallelism.

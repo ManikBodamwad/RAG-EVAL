@@ -1,0 +1,23 @@
+Fine-Tuning Large Language Models
+
+Fine-tuning is the process of continuing the training of a pre-trained model on a smaller, task-specific dataset to adapt it to a particular domain or task. It leverages the general knowledge captured during pre-training while specializing the model's behavior.
+
+Types of Fine-Tuning:
+
+1. Full Fine-Tuning:
+All model parameters are updated during backpropagation. Works best when you have a large, high-quality dataset and sufficient compute. Risk of catastrophic forgetting if the task is too different from pre-training data.
+
+2. Parameter-Efficient Fine-Tuning (PEFT):
+Only a small number of additional or existing parameters are updated. Major techniques include:
+- LoRA (Low-Rank Adaptation): Injects trainable low-rank matrices into existing weight matrices. Typically updates less than 1% of parameters with near full fine-tune performance.
+- QLoRA: LoRA applied to a 4-bit quantized base model, enabling fine-tuning on consumer hardware.
+- Prefix Tuning: Learns soft prompt tokens prepended to the input.
+- Adapter Layers: Inserts small trainable bottleneck modules between Transformer layers.
+
+3. Instruction Fine-Tuning:
+Trains on (instruction, response) pairs to improve a model's ability to follow natural language instructions. GPT-3.5, Llama-2-chat, and Mistral-Instruct are examples.
+
+When to Use Fine-Tuning vs. RAG:
+- RAG is preferred for knowledge updates, attribution, and cost efficiency.
+- Fine-tuning is preferred for style/format changes, consistent tone, domain-specific reasoning patterns, and reducing system prompt length.
+- They are complementary: a fine-tuned model can be a better RAG generator.

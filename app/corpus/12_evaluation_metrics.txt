@@ -1,0 +1,39 @@
+Evaluation Metrics for Large Language Models
+
+Evaluating LLMs is a multidimensional challenge because language quality is subjective, task-specific, and computationally expensive to measure. Modern evaluation combines automated metrics, benchmarks, and human evaluation.
+
+Traditional NLP Metrics (Reference-Based):
+
+BLEU (Bilingual Evaluation Understudy):
+- Measures n-gram overlap between generated text and reference text.
+- Fast and deterministic. Poor correlation with human quality for open-ended generation.
+- Still widely used in machine translation.
+
+ROUGE (Recall-Oriented Understudy for Gisting Evaluation):
+- Measures recall-oriented n-gram overlap.
+- ROUGE-1, ROUGE-2 (bigrams), ROUGE-L (longest common subsequence).
+- Used in summarization benchmarks.
+
+BERTScore:
+- Uses BERT embeddings to compute semantic similarity between generated and reference text.
+- Better correlation with human judgments than BLEU/ROUGE for open-ended tasks.
+
+LLM-as-a-Judge (Modern Approach):
+Using a capable LLM (e.g., GPT-4, Claude, Llama-3.3-70b) to evaluate the quality of another LLM's outputs. Key patterns:
+- Direct scoring: "Rate this answer from 1-5 on accuracy."
+- Pairwise comparison: "Which of these two answers is better and why?"
+- Rubric-based: "Does this answer satisfy each of: [criterion 1], [criterion 2], ...?"
+
+RAG-Specific Metrics (Ragas Framework):
+- Faithfulness: Are all claims in the answer supported by the retrieved context?
+- Context Relevance: Is the retrieved context actually relevant to the question?
+- Answer Correctness: How close is the answer to the ground truth?
+- Context Recall: What fraction of ground truth is covered by retrieved context?
+- Context Precision: What fraction of retrieved context is relevant?
+
+LLM Benchmarks:
+- MMLU: Multi-task language understanding across 57 subjects.
+- HumanEval: Code generation (GitHub Copilot originated here).
+- GSM8K: Grade school math word problems.
+- ARC-Challenge: Science questions at middle-school difficulty.
+- HellaSwag: Commonsense natural language inference.

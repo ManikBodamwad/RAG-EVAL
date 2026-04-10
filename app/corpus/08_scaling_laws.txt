@@ -1,0 +1,24 @@
+LLM Scaling Laws
+
+Scaling laws describe the predictable, empirical relationships between the performance of large language models and three key factors: the number of model parameters (N), the amount of training data (D), and the amount of compute (C). These laws allow AI researchers to extrapolate model performance before spending billions on training runs.
+
+The Kaplan et al. Scaling Laws (2020):
+The original OpenAI scaling laws showed that LLM test loss follows a power law with respect to N, D, and C when not bottlenecked by another factor:
+  Loss(N) ∝ N^(-α)
+  Loss(D) ∝ D^(-β)
+  Loss(C) ∝ C^(-γ)
+
+The key insight: given a fixed compute budget, it is better to train a larger model on less data than a smaller model on more data.
+
+The Chinchilla Scaling Laws (Hoffmann et al., 2022):
+DeepMind's Chinchilla paper challenged the Kaplan findings. It showed that the original laws underweighted the importance of training data. The Chinchilla optimal result: for a compute-optimal model, the number of training tokens should scale roughly linearly with model parameters — approximately 20 tokens per parameter.
+
+This meant that many large models (including GPT-3 at 300B tokens for 175B parameters) were significantly undertrained. Chinchilla-70B (trained on 1.4T tokens) outperformed Gopher-280B on most benchmarks.
+
+Implications for Practitioners:
+- A 7B model trained on 200B tokens will often outperform a 70B model trained on 20B tokens.
+- Inference is cheaper for smaller, better-trained models — driving the trend toward smaller but more data-efficient models.
+- Scaling laws have enabled confident GPT-4 training cost estimates before training began.
+
+Emergent Abilities:
+Beyond smooth scaling, certain capabilities (e.g., multi-step reasoning, few-shot learning) appear to emerge abruptly at specific scale thresholds — so-called "emergent abilities." Their predictability remains debated.

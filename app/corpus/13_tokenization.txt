@@ -1,0 +1,27 @@
+Tokenization in Large Language Models
+
+Tokenization is the process of breaking down raw text into discrete units called tokens, which are the fundamental input/output elements of a language model. Understanding tokenization is critical for LLM practitioners because it directly affects cost, context length, and model behavior.
+
+What is a Token?
+A token is a subword unit — not a word and not a character. Modern LLMs use Byte-Pair Encoding (BPE) or SentencePiece tokenization, which represents common words as single tokens and rare/unknown words as multiple subword tokens. As a rule of thumb, 1 token ≈ 4 characters ≈ 0.75 words in English.
+
+Byte-Pair Encoding (BPE):
+BPE starts with a character vocabulary and iteratively merges the most frequent adjacent token pairs. It achieves an optimal balance between vocabulary size and sequence compression. GPT models (including GPT-3, GPT-4) use the tiktoken BPE implementation.
+
+SentencePiece:
+An alternative to BPE that treats text as a raw byte stream, enabling language-agnostic tokenization without word-boundary assumptions. Used in Llama, T5, and many multilingual models.
+
+Tokenizer Vocabulary Size:
+- GPT-2: 50,257 tokens
+- GPT-4/GPT-3.5: 100,256 tokens (cl100k_base)
+- Llama-2: 32,000 tokens
+- Llama-3: 128,000 tokens (much better Unicode/code handling)
+
+Practical Implications:
+- Cost: API pricing is per-token. Long prompts and long outputs are expensive.
+- Context window: Measured in tokens (e.g., GPT-4 Turbo = 128K tokens).
+- Special tokens: [BOS] (beginning of sequence), [EOS] (end of sequence), [PAD], and chat template tokens mark structure boundaries.
+- Languages: Non-English languages tokenize less efficiently (more tokens per word), making them more expensive and reaching context limits faster.
+- Code: Code tends to tokenize at ~2 characters per token due to many special characters and identifiers.
+
+Token efficiency in RAG systems is an important cost metric: a high-quality, concise answer uses fewer output tokens than a verbose answer with the same information content.

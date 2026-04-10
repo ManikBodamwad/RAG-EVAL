@@ -1,0 +1,38 @@
+Guardrails and AI Safety in Production
+
+Deploying large language models in production requires robust guardrails — safety systems that prevent harmful, biased, or off-topic outputs while maintaining helpfulness. AI safety engineering is a growing discipline at the intersection of ML engineering and responsible AI.
+
+Categories of LLM Risks:
+1. Harmful Content: Violence, hate speech, sexual content, self-harm instructions.
+2. Jailbreaks and Prompt Injections: Adversarial inputs that bypass system prompt instructions.
+3. Hallucination/Misinformation: Confidently incorrect factual claims.
+4. Data Leakage: Accidental inclusion of private training data or PII in outputs.
+5. Brand Risk: Off-topic, embarrassing, or competitor-mentioning responses.
+6. Excessive Cost: Prompt injection attacks that cause the model to generate extremely long outputs.
+
+Guardrail Layers:
+
+1. Input Guardrails:
+- Toxicity classifiers (e.g., Perspective API, Llama Guard) screen incoming users messages.
+- PII detection to redact sensitive information before it enters the prompt.
+- Prompt injection detection to identify adversarial override attempts.
+- Topic filtering to restrict queries to the application's intended domain.
+
+2. Output Guardrails:
+- Faithfulness checks: Verify the response is grounded in retrieved context.
+- Toxicity/harm classifiers on the generated output.
+- Format validation: Ensure the response matches expected JSON/markdown structure.
+- Length limits: Prevent runaway generation from adversarial token injection.
+
+3. System-Level Controls:
+- Rate limiting per user/session to prevent abuse.
+- Conversation memory limits to cap context window.
+- Audit logging for all LLM inputs and outputs.
+
+Frameworks for Guardrails:
+- NeMo Guardrails (NVIDIA): Colang language for defining conversation guardrails.
+- Guardrails-AI: Python framework with validators that intercept LLM I/O.
+- Llama Guard: Meta's content safety classifier fine-tuned from Llama.
+- OpenAI Moderation API: Fast binary content policy classifier.
+
+A layered defense approach is essential: no single guardrail is sufficient, and adversarial users will probe every weak point.

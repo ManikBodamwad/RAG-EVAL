@@ -1,0 +1,25 @@
+Reinforcement Learning from Human Feedback (RLHF)
+
+Reinforcement Learning from Human Feedback (RLHF) is a training methodology that uses human preference signals to align language models with human values, instructions, and preferences. It is the key technique that transformed base language models like GPT-3 into instruction-following assistants like ChatGPT.
+
+The RLHF Pipeline:
+
+1. Supervised Fine-Tuning (SFT):
+A pre-trained LLM is fine-tuned on a dataset of human-written demonstrations of desired behavior (instruction-response pairs). This creates the SFT model — a reasonable starting point for alignment.
+
+2. Reward Model Training:
+Human annotators rank multiple model outputs from best to worst for a given prompt. These preference pairs are used to train a reward model (RM) that learns to assign a scalar score predicting human preference. The RM is typically a smaller LLM with a regression head.
+
+3. RL Optimization (PPO/REINFORCE):
+The SFT model is further fine-tuned using Proximal Policy Optimization (PPO). At each step, the policy (LLM) generates responses, the reward model scores them, and the policy is updated to maximize reward. A KL-divergence penalty against the SFT model prevents the policy from drifting too far (reward hacking).
+
+Challenges of RLHF:
+- Human annotation is expensive and slow.
+- Reward hacking: the model learns to game the reward model rather than truly being helpful.
+- Inconsistency: different annotators have conflicting preferences.
+
+Alternatives to RLHF:
+- Direct Preference Optimization (DPO): Eliminates the reward model, directly optimizing on preference data.
+- RLAIF (RL from AI Feedback): Replaces human annotators with a judge LLM (e.g., GPT-4) to generate preference data at scale.
+
+RLHF is used in GPT-4, Claude, Llama-2-chat, Gemini, and virtually every major deployed assistant model.

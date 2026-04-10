@@ -1,0 +1,27 @@
+Model Context Protocol (MCP)
+
+The Model Context Protocol (MCP) is an open standard introduced by Anthropic in November 2024 that defines a universal interface for connecting AI models (LLMs) to external data sources, tools, and computational environments. It is analogous to what USB-C is for device connectivity — a single plug that works everywhere.
+
+The Problem MCP Solves:
+Before MCP, every AI application that needed access to external tools (databases, APIs, file systems, code executors) had to build custom integrations from scratch. This created an M×N integration problem: M different AI applications each needing N different tool integrations, resulting in M×N bespoke implementations.
+
+MCP Architecture:
+MCP defines a client-server protocol using JSON-RPC 2.0:
+- MCP Host: The AI application (e.g., Claude Desktop, Cursor, custom app).
+- MCP Client: Embedded in the host; manages the connection and protocol negotiation.
+- MCP Server: A standalone process that wraps tools, resources, and prompts. Exposes them via the MCP interface.
+
+Three core primitives:
+1. Tools: Callable functions the AI can invoke (read a file, query a DB, call an API).
+2. Resources: Data or content the AI can access (file contents, database rows).
+3. Prompts: Pre-built prompt templates the server exposes for common tasks.
+
+Communication: Servers communicate via stdin/stdout (local) or HTTP+SSE (remote). Transport is transport-agnostic — the protocol is the same regardless.
+
+Why MCP Matters for AI Engineering:
+- Composability: An MCP server built once works with any MCP-compliant host.
+- Security: Servers control their own access and can enforce permissions.
+- Community ecosystem: Hundreds of pre-built MCP servers available (GitHub, Slack, Postgres, Notion, Brave Search, etc.).
+- Stateful context: Unlike generic API calls, MCP maintains session context.
+
+MCP is widely adopted: Cursor, Windsurf, Claude Desktop, and many enterprise AI tools now support MCP clients.
