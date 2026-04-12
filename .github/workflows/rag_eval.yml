@@ -31,7 +31,7 @@ permissions:
 
 jobs:
   rag-evaluation:
-    name: "🤖 RAG Quality Gate"
+    name: "RAG Quality Gate"
     runs-on: ubuntu-latest
     timeout-minutes: 30            # Hard cap — Groq is fast but evaluation takes time
 
@@ -155,16 +155,16 @@ jobs:
               // Fallback: generate a simple comment from the JSON
               const report = JSON.parse(fs.readFileSync('eval_report.json', 'utf8'));
               const pass = (v, t) => v >= t ? '✅' : '❌';
-              commentBody = `## 🤖 RAG Evaluation Report — PR #${context.issue.number}
+              commentBody = `## RAG Evaluation Report — PR #${context.issue.number}
 
             ${report.overall_pass ? '## ✅ RAG Quality Gate: PASSED' : '## ❌ RAG Quality Gate: BLOCKED'}
 
             | Metric | Score | Threshold | Status |
             |--------|-------|-----------|--------|
-            | 🎯 Faithfulness | \`${(report.faithfulness||0).toFixed(4)}\` | ≥ 0.75 | ${pass(report.faithfulness, 0.75)} |
-            | 🔍 Context Relevance | \`${(report.context_relevance||0).toFixed(4)}\` | ≥ 0.70 | ${pass(report.context_relevance, 0.70)} |
-            | ✔️ Answer Correctness | \`${(report.answer_correctness||0).toFixed(4)}\` | ≥ 0.65 | ${pass(report.answer_correctness, 0.65)} |
-            | ⚡ Token Efficiency | \`${(report.token_efficiency||0).toFixed(4)}\` | ≥ 0.50 | ${pass(report.token_efficiency, 0.50)} |
+            | Faithfulness | \`${(report.faithfulness||0).toFixed(4)}\` | ≥ 0.75 | ${pass(report.faithfulness, 0.75)} |
+            | Context Relevance | \`${(report.context_relevance||0).toFixed(4)}\` | ≥ 0.70 | ${pass(report.context_relevance, 0.70)} |
+            | Answer Correctness | \`${(report.answer_correctness||0).toFixed(4)}\` | ≥ 0.65 | ${pass(report.answer_correctness, 0.65)} |
+            | Token Efficiency | \`${(report.token_efficiency||0).toFixed(4)}\` | ≥ 0.50 | ${pass(report.token_efficiency, 0.50)} |
 
             *Judge: \`${report.judge_model||'N/A'}\` · Dataset: \`${report.dataset_repo||'local'}\` · Samples: ${report.num_samples||0}*`;
             } else {
@@ -186,7 +186,7 @@ jobs:
             });
 
             const botComment = comments.find(c =>
-              c.user.type === 'Bot' && c.body.includes('🤖 RAG Evaluation Report')
+              c.user.type === 'Bot' && c.body.includes('RAG Evaluation Report')
             );
 
             if (botComment) {

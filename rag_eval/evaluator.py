@@ -1,15 +1,7 @@
 """
-rag_eval/evaluator.py — Ragas Metric Orchestration + Regression Gate
+rag_eval/evaluator.py
 
-This module is the core of the evaluation pipeline:
-  1. Loads the golden dataset from HF Hub (or local fallback)
-  2. Runs each question through the RAG pipeline to get answers + contexts
-  3. Evaluates using Ragas metrics (Faithfulness, ContextRelevance, AnswerCorrectness)
-  4. Computes the custom Token Efficiency metric
-  5. Applies threshold gates from eval_config.yaml
-  6. Returns a structured EvaluationResult
-
-LLM Judge: groq/llama-3.3-70b-versatile via litellm (hot-swappable via JUDGE_MODEL env var)
+Handles evaluation pipeline orchestration, including dataset loading, RAG queries, and Ragas metrics calculation against defined thresholds.
 """
 
 from __future__ import annotations
@@ -28,10 +20,7 @@ import yaml
 logger = logging.getLogger(__name__)
 
 
-# ──────────────────────────────────────────────────────────────────────────────
 # Data Structures
-# ──────────────────────────────────────────────────────────────────────────────
-
 @dataclass
 class MetricScore:
     """Result for a single evaluation metric."""
@@ -80,19 +69,10 @@ class EvaluationResult:
         return json.dumps(self.to_dict(), indent=indent, default=str)
 
 
-# ──────────────────────────────────────────────────────────────────────────────
 # Evaluator
-# ──────────────────────────────────────────────────────────────────────────────
-
 class RagEvaluator:
     """
-    Orchestrates RAG pipeline evaluation using Ragas metrics + LLM judge.
-
-    Usage:
-        evaluator = RagEvaluator(config_path="eval_config.yaml")
-        result = evaluator.evaluate()
-        print(result.overall_pass)
-        print(result.faithfulness)
+    Orchestrates RAG pipeline evaluation using Ragas.
     """
 
     DEFAULT_CONFIG_PATH = Path("eval_config.yaml")
@@ -121,8 +101,6 @@ class RagEvaluator:
     def _load_dataset(self) -> list[dict]:
         """
         Load the golden evaluation dataset.
-        Primary: HF Hub (live public dataset — portfolio impressive!)
-        Fallback: local golden_dataset.jsonl file
         """
         hf_repo = self.config.get("dataset", {}).get("hf_repo", "")
         local_fallback = self.config.get("dataset", {}).get("local_fallback", "golden_dataset.jsonl")
@@ -350,40 +328,31 @@ class RagEvaluator:
 
     def evaluate(self) -> EvaluationResult:
         """
-        Run the full evaluation pipeline:
-          1. Load golden dataset
-          2. Run RAG pipeline on all questions
-          3. Evaluate with Ragas + LLM judge
-          4. Compute token efficiency
-          5. Apply regression gate
-          6. Return structured EvaluationResult
+        Run the full evaluation pipeline.
         """
         from datetime import datetime, timezone
 
         t_start = time.perf_counter()
         timestamp = datetime.now(timezone.utc).isoformat()
 
-        logger.info("=" * 60)
-        logger.info("  RAG EVAL — Starting Evaluation Pipeline")
-        logger.info("=" * 60)
+        logger.info("Starting evaluation pipeline...")
 
-        # Step 1: Load golden dataset
-        logger.info("\n📂 Step 1: Loading golden dataset...")
+        logger.info("Loading golden dataset...")
         samples = self._load_dataset()
         logger.info(f"  Loaded {len(samples)} evaluation samples")
 
         # Step 2: Initialize LLM judge
-        logger.info("\n🤖 Step 2: Initializing LLM judge...")
+        logger.info("Initializing LLM judge...")
         eval_llm, judge_model = self._build_ragas_llm()
 
         # Step 3: Run RAG pipeline on all samples
-        logger.info(f"\n🔍 Step 3: Running RAG pipeline on {len(samples)} questions...")
+        logger.info(f"Running RAG pipeline on {len(samples)} questions...")
         rag_samples = self._run_rag_pipeline(samples)
 
         # Step 4: Compute Ragas metrics
-        logger.info("\n📊 Step 4: Computing Ragas evaluation metrics...")
+        logger.info("Computing evaluation metrics...")
         ragas_scores = self._compute_ragas_metrics(rag_samples, eval_llm)
-        logger.info(f"  Raw Ragas scores: {ragas_scores}")
+        logger.info(f"Raw scores: {ragas_scores}")
 
         # Normalize metric names (Ragas may return different keys)
         faithfulness = ragas_scores.get("faithfulness", ragas_scores.get("Faithfulness", 0.0))
@@ -397,7 +366,7 @@ class RagEvaluator:
         )
 
         # Step 5: Compute custom token efficiency metric
-        logger.info("\n⚡ Step 5: Computing token efficiency metric...")
+        logger.info("Computing token efficiency metric...")
         token_efficiency = self._compute_token_efficiency(rag_samples, answer_correctness)
 
         all_scores = {
@@ -406,10 +375,10 @@ class RagEvaluator:
             "answer_correctness": round(answer_correctness, 4),
             "token_efficiency": token_efficiency,
         }
-        logger.info(f"  Final scores: {all_scores}")
+        logger.info(f"Final scores: {all_scores}")
 
         # Step 6: Apply regression gate
-        logger.info("\n🚦 Step 6: Applying regression gate...")
+        logger.info("Applying regression gate...")
         overall_pass, failed_metrics = self._apply_gate(all_scores)
 
         per_metric_pass = {
@@ -445,10 +414,8 @@ class RagEvaluator:
             sample_token_counts=[s["token_counts"] for s in rag_samples],
         )
 
-        verdict = "✅ PASSED" if overall_pass else "❌ FAILED"
-        logger.info(f"\n{'='*60}")
-        logger.info(f"  EVALUATION COMPLETE — {verdict}")
-        logger.info(f"  Time: {total_time:.1f}s | Samples: {len(samples)}")
-        logger.info(f"{'='*60}\n")
+        verdict = "PASSED" if overall_pass else "FAILED"
+        logger.info(f"Evaluation complete: {verdict}")
+        logger.info(f"Time: {total_time:.1f}s | Samples: {len(samples)}")
 
         return result

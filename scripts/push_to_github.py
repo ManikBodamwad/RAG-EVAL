@@ -162,7 +162,7 @@ Required scope: repo
     print(f"  ✅ Authenticated as: {username}")
 
     # Check repo exists
-    print(f"\n📦 Checking repository {REPO_OWNER}/{REPO_NAME}...")
+    print(f"\nChecking repository {REPO_OWNER}/{REPO_NAME}...")
     if not check_repo_exists(args.token):
         print(f"❌ Repository not found: https://github.com/{REPO_OWNER}/{REPO_NAME}")
         print("   Create it at: https://github.com/new")
@@ -195,14 +195,14 @@ Required scope: repo
     print(f"  Found {len(files_to_push)} files to push\n")
 
     if args.dry_run:
-        print("🔍 DRY RUN — Files that would be pushed:")
+        print("DRY RUN — Files that would be pushed:")
         for _, repo_path in files_to_push:
             print(f"  → {repo_path}")
         print(f"\nTotal: {len(files_to_push)} files")
         return
 
     # Push all files
-    print(f"🚀 Pushing {len(files_to_push)} files to GitHub...")
+    print(f"Pushing {len(files_to_push)} files to GitHub...")
     print("-" * 65)
 
     success_count = 0

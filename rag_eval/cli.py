@@ -1,11 +1,7 @@
 """
-rag_eval/cli.py — Command-Line Interface for rag-eval
+rag_eval/cli.py
 
-Entry point: `rag-eval` (installed via pyproject.toml [project.scripts])
-
-Commands:
-  rag-eval run     — Run the full evaluation pipeline
-  rag-eval report  — Print the last evaluation report as a formatted table
+Provides the command-line interface for running and reporting on rag-eval.
 """
 
 from __future__ import annotations
@@ -36,22 +32,13 @@ def _setup_logging(verbose: bool) -> None:
             logging.getLogger(noisy).setLevel(logging.WARNING)
 
 
-# ──────────────────────────────────────────────────────────────────────────────
 # Root CLI group
-# ──────────────────────────────────────────────────────────────────────────────
 
 @click.group()
 @click.version_option(version=__version__, prog_name="rag-eval")
 def cli():
     """
-    \b
-    ┌─────────────────────────────────────────────┐
-    │  rag-eval — Automated RAG Evaluation Pipeline  │
-    │  Quality gate for AI chatbots via Ragas + Groq │
-    └─────────────────────────────────────────────┘
-
-    Evaluate your RAG pipeline, track quality over PRs,
-    and block merges when scores drop below thresholds.
+    rag-eval — Evaluate your RAG pipeline from the command line.
 
     \b
     Quick Start:
@@ -62,9 +49,7 @@ def cli():
     pass
 
 
-# ──────────────────────────────────────────────────────────────────────────────
 # rag-eval run
-# ──────────────────────────────────────────────────────────────────────────────
 
 @cli.command("run")
 @click.option(
@@ -148,16 +133,14 @@ def run_evaluation(
     if not os.environ.get("GROQ_API_KEY"):
         click.echo(
             click.style(
-                "❌ Error: GROQ_API_KEY environment variable not set.\n"
-                "   Get a free key at: https://console.groq.com\n"
-                "   Then run: export GROQ_API_KEY=gsk_your_key",
+                "Error: GROQ_API_KEY environment variable not set.",
                 fg="red",
             ),
             err=True,
         )
         sys.exit(1)
 
-    click.echo(click.style(f"\n🚀 rag-eval v{__version__} — Starting Evaluation\n", bold=True))
+    click.echo(click.style(f"\nrag-eval v{__version__} — Starting Evaluation\n", bold=True))
 
     try:
         from rag_eval.evaluator import RagEvaluator
@@ -182,30 +165,30 @@ def run_evaluation(
         # Push to Grafana Cloud (non-fatal)
         if push_grafana:
             run_id = os.environ.get("GITHUB_RUN_ID")
-            click.echo("\n📡 Pushing scores to Grafana Cloud...")
+            click.echo("\nPushing scores to Grafana Cloud...")
             success = push_from_result(result, run_id=run_id)
             if not success:
                 click.echo(
-                    click.style("  ℹ️  Grafana push skipped or failed (non-fatal)", fg="yellow")
+                    click.style("  Grafana push skipped or failed", fg="yellow")
                 )
 
         # Generate and display PR comment format (useful in CI logs)
         pr_comment = reporter.format_pr_comment(result)
         click.echo("\n" + "─" * 65)
-        click.echo("📝 PR Comment Preview (this will be posted to GitHub):")
+        click.echo("PR Comment Preview:")
         click.echo("─" * 65)
         click.echo(pr_comment)
 
         # Save PR comment to file for GitHub Actions to pick up
         pr_comment_path = Path(output).parent / "pr_comment.md"
         pr_comment_path.write_text(pr_comment, encoding="utf-8")
-        click.echo(f"\n💬 PR comment saved: {pr_comment_path}")
+        click.echo(f"\nPR comment saved: {pr_comment_path}")
 
         # Regression gate decision
         if result.overall_pass:
             click.echo(
                 click.style(
-                    "\n✅ Regression gate: PASSED — All metrics above thresholds",
+                    "\nRegression gate: PASSED",
                     fg="green", bold=True
                 )
             )
@@ -214,7 +197,7 @@ def run_evaluation(
             failed = ", ".join(result.failed_metrics.keys())
             click.echo(
                 click.style(
-                    f"\n❌ Regression gate: TRIGGERED — Failed metrics: {failed}",
+                    f"\nRegression gate: TRIGGERED. Failed metrics: {failed}",
                     fg="red", bold=True
                 )
             )
@@ -236,19 +219,17 @@ def run_evaluation(
                 sys.exit(0)
 
     except FileNotFoundError as e:
-        click.echo(click.style(f"\n❌ File not found: {e}", fg="red"), err=True)
+        click.echo(click.style(f"\nFile not found: {e}", fg="red"), err=True)
         sys.exit(1)
     except Exception as e:
-        click.echo(click.style(f"\n❌ Evaluation failed: {e}", fg="red"), err=True)
+        click.echo(click.style(f"\nEvaluation failed: {e}", fg="red"), err=True)
         if verbose:
             import traceback
             traceback.print_exc()
         sys.exit(1)
 
 
-# ──────────────────────────────────────────────────────────────────────────────
 # rag-eval report
-# ──────────────────────────────────────────────────────────────────────────────
 
 @cli.command("report")
 @click.option(
@@ -289,7 +270,7 @@ def show_report(input_path: str, output_format: str):
     try:
         data = reporter.load_json(path=Path(input_path))
     except FileNotFoundError as e:
-        click.echo(click.style(f"❌ {e}", fg="red"), err=True)
+        click.echo(click.style(f"{e}", fg="red"), err=True)
         sys.exit(1)
 
     if output_format == "json":
@@ -320,9 +301,7 @@ def show_report(input_path: str, output_format: str):
         reporter.print_rich_table(result)
 
 
-# ──────────────────────────────────────────────────────────────────────────────
 # Entry point
-# ──────────────────────────────────────────────────────────────────────────────
 
 if __name__ == "__main__":
     cli()

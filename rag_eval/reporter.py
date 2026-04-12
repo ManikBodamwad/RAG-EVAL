@@ -1,10 +1,7 @@
 """
-rag_eval/reporter.py — Report Writer & PR Comment Formatter
+rag_eval/reporter.py
 
-Two responsibilities:
-  1. JSON Report Writer — saves structured evaluation results with metadata
-  2. GitHub PR Comment Formatter — generates beautiful Markdown with score tables,
-     pass/fail badges, and verdict banners for GitHub PR comments
+Saves JSON reports and formats Markdown for GitHub PR comments.
 """
 
 from __future__ import annotations
@@ -18,50 +15,43 @@ from typing import Optional
 from rag_eval.evaluator import EvaluationResult
 
 
-# ──────────────────────────────────────────────────────────────────────────────
 # Metric Display Configuration
-# ──────────────────────────────────────────────────────────────────────────────
 
 METRIC_CONFIG = {
     "faithfulness": {
         "display_name": "Faithfulness",
-        "description": "Answer grounded in retrieved context (hallucination rate)",
-        "emoji": "🎯",
+        "description": "Answer grounded in retrieved context",
+        "emoji": "",
     },
     "context_relevance": {
         "display_name": "Context Relevance",
         "description": "Retrieved context relevance to the question",
-        "emoji": "🔍",
+        "emoji": "",
     },
     "answer_correctness": {
         "display_name": "Answer Correctness",
-        "description": "Accuracy vs. golden ground truth answer",
-        "emoji": "✔️",
+        "description": "Accuracy vs. reference answer",
+        "emoji": "",
     },
     "token_efficiency": {
         "display_name": "Token Efficiency",
-        "description": "Quality per output token — SRE cost awareness",
-        "emoji": "⚡",
+        "description": "Quality per output token",
+        "emoji": "",
     },
 }
 
 
-# ──────────────────────────────────────────────────────────────────────────────
 # Reporter class
-# ──────────────────────────────────────────────────────────────────────────────
 
 class Reporter:
     """
-    Generates evaluation reports in multiple formats:
-      - JSON file (for CI artifact storage and Grafana push)
-      - Markdown (for GitHub PR comments)
-      - Rich table (for local CLI display)
+    Generates evaluation reports.
     """
 
     def __init__(self, output_path: Optional[Path] = None):
         self.output_path = Path(output_path) if output_path else Path("eval_report.json")
 
-    # ── JSON Report ────────────────────────────────────────────────────────────
+
 
     def save_json(self, result: EvaluationResult) -> Path:
         """Save evaluation result as a JSON report file."""
@@ -70,7 +60,7 @@ class Reporter:
             f.write(result.to_json())
 
         file_size = self.output_path.stat().st_size
-        print(f"📄 Report saved: {self.output_path} ({file_size:,} bytes)")
+        print(f"Report saved: {self.output_path} ({file_size:,} bytes)")
         return self.output_path
 
     def load_json(self, path: Optional[Path] = None) -> dict:
@@ -84,17 +74,11 @@ class Reporter:
         with open(report_path, "r", encoding="utf-8") as f:
             return json.load(f)
 
-    # ── GitHub PR Comment Formatter ────────────────────────────────────────────
+
 
     def format_pr_comment(self, result: EvaluationResult) -> str:
         """
-        Generate a beautifully formatted Markdown PR comment.
-
-        Produces:
-          - Header with PR number and overall verdict badge
-          - Per-metric score table with ✅/❌ badges
-          - Failure detail section (if any failures)
-          - Metadata footer (model, dataset, timing)
+        Generate Markdown PR comment.
         """
         pr_ref = f"PR #{result.pr_number}" if result.pr_number else "Evaluation Run"
         timestamp = result.timestamp[:19].replace("T", " ") + " UTC" if result.timestamp else ""
@@ -149,7 +133,7 @@ class Reporter:
             bar = "█" * filled + "░" * (bar_len - filled)
 
             table_rows.append(
-                f"| {emoji} {display} | {score_str} | `{bar}` | {threshold_str} | {status} |"
+                f"| {display} | {score_str} | `{bar}` | {threshold_str} | {status} |"
             )
 
         table_header = (
@@ -170,20 +154,19 @@ class Reporter:
                     f"(gap: `-{info['gap']:.4f}`)"
                 )
             failure_details = (
-                "\n### ⚠️ Threshold Violations\n"
+                "\n### Threshold Violations\n"
                 + "\n".join(failure_lines)
             )
 
-        # Metadata section
         meta_lines = [
-            f"| 🤖 Judge Model | `{result.judge_model}` |",
-            f"| 🛠️ RAG Model | `{result.rag_model}` |",
-            f"| 📦 Dataset | `{result.dataset_repo}` |",
-            f"| 📊 Samples | `{result.num_samples}` |",
-            f"| ⏱️ Duration | `{result.total_evaluation_time_s:.1f}s` |",
+            f"| Judge Model | `{result.judge_model}` |",
+            f"| RAG Model | `{result.rag_model}` |",
+            f"| Dataset | `{result.dataset_repo}` |",
+            f"| Samples | `{result.num_samples}` |",
+            f"| Duration | `{result.total_evaluation_time_s:.1f}s` |",
         ]
         if timestamp:
-            meta_lines.append(f"| 🕐 Evaluated | `{timestamp}` |")
+            meta_lines.append(f"| Evaluated | `{timestamp}` |")
 
         meta_table = (
             "| Property | Value |\n"
@@ -192,7 +175,7 @@ class Reporter:
         )
 
         # Assemble full comment
-        comment = f"""## 🤖 RAG Evaluation Report — {pr_ref}
+        comment = f"""## RAG Evaluation Report — {pr_ref}
 
 {verdict_banner}
 
@@ -200,7 +183,7 @@ class Reporter:
 
 ---
 
-### 📊 Metric Scores
+### Metric Scores
 
 {table_header}
 {table_body}
@@ -208,19 +191,17 @@ class Reporter:
 
 ---
 
-### 🔬 Evaluation Metadata
+### Evaluation Metadata
 
 {meta_table}
 
 ---
-<sup>Powered by <a href="https://github.com/manikbodamwad/rag-eval">rag-eval</a> · Ragas + Groq llama-3.3-70b · <a href="https://grafana.com">Live Dashboard</a></sup>
+<sup>Powered by <a href="https://github.com/manikbodamwad/rag-eval">rag-eval</a></sup>
 """
         return comment.strip()
 
-    # ── Rich CLI Table ─────────────────────────────────────────────────────────
-
     def print_rich_table(self, result: EvaluationResult) -> None:
-        """Print a beautifully formatted table to the terminal using Rich."""
+        """Print formatted table to the terminal."""
         try:
             from rich.console import Console
             from rich.panel import Panel
@@ -241,7 +222,7 @@ class Reporter:
 
         # Metrics table
         table = Table(
-            title=f"📊 Evaluation Scores",
+            title=f"Evaluation Scores",
             box=box.ROUNDED,
             show_header=True,
             header_style="bold cyan",
@@ -261,7 +242,7 @@ class Reporter:
         for metric_key in ["faithfulness", "context_relevance", "answer_correctness", "token_efficiency"]:
             score = getattr(result, metric_key, 0.0)
             cfg = METRIC_CONFIG.get(metric_key, {})
-            display = cfg.get("emoji", "") + " " + cfg.get("display_name", metric_key)
+            display = cfg.get("display_name", metric_key)
             threshold = threshold_map.get(metric_key, 0.0)
             passed = result.per_metric_pass.get(metric_key, True)
 

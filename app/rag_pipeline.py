@@ -1,14 +1,7 @@
 """
-app/rag_pipeline.py — Mock RAG Application
+app/rag_pipeline.py
 
-A production-realistic Retrieval-Augmented Generation pipeline used as
-the evaluation target. This is the system being quality-gated by rag-eval.
-
-Architecture:
-  - Embedding: sentence-transformers/all-MiniLM-L6-v2 (local, no API cost)
-  - Vector Store: FAISS CPU (in-memory, built at startup)
-  - Generator: Groq LLM via LiteLLM (configurable via RAG_MODEL env var)
-  - Retriever: Top-3 similarity search with cosine distance
+A standard Retrieval-Augmented Generation pipeline used as the evaluation target.
 """
 
 from __future__ import annotations
@@ -23,9 +16,7 @@ from typing import Optional
 
 logger = logging.getLogger(__name__)
 
-# ──────────────────────────────────────────────────────────────────────────────
 # Optional imports with helpful error messages
-# ──────────────────────────────────────────────────────────────────────────────
 
 try:
     from langchain_community.vectorstores import FAISS
@@ -47,9 +38,7 @@ except ImportError as e:
     ) from e
 
 
-# ──────────────────────────────────────────────────────────────────────────────
-# Data Structures
-# ──────────────────────────────────────────────────────────────────────────────
+
 
 @dataclass
 class RAGResult:
@@ -65,9 +54,7 @@ class RAGResult:
     sources: list[str] = field(default_factory=list)  # Source filenames
 
 
-# ──────────────────────────────────────────────────────────────────────────────
-# RAG Pipeline
-# ──────────────────────────────────────────────────────────────────────────────
+
 
 class RAGPipeline:
     """
@@ -86,7 +73,7 @@ class RAGPipeline:
     DEFAULT_CHUNK_SIZE = 800
     DEFAULT_CHUNK_OVERLAP = 100
 
-    # LiteLLM model name — Groq's blazing LPU inference
+    # Default generator model
     DEFAULT_MODEL = "groq/llama-3.3-70b-versatile"
 
     SYSTEM_PROMPT = """You are a precise, knowledgeable AI assistant specializing in machine learning and AI concepts.
@@ -120,7 +107,7 @@ Rules:
         self._vectorstore: Optional[FAISS] = None
         self._embeddings: Optional[HuggingFaceEmbeddings] = None
 
-    # ── Initialization ─────────────────────────────────────────────────────────
+
 
     def _load_embeddings(self) -> HuggingFaceEmbeddings:
         """Load the local sentence-transformer embedding model."""
@@ -199,7 +186,7 @@ Rules:
         if self._vectorstore is None:
             self.build_index()
 
-    # ── Retrieval ──────────────────────────────────────────────────────────────
+
 
     def retrieve(self, question: str) -> tuple[list[str], list[str], float]:
         """
@@ -219,7 +206,7 @@ Rules:
 
         return contexts, sources, retrieval_time_ms
 
-    # ── Generation ─────────────────────────────────────────────────────────────
+
 
     def generate(self, question: str, contexts: list[str]) -> tuple[str, int, int, float]:
         """
@@ -256,7 +243,7 @@ Rules:
 
         return answer, input_tokens, output_tokens, generation_time_ms
 
-    # ── Full Pipeline ──────────────────────────────────────────────────────────
+
 
     def query(self, question: str) -> RAGResult:
         """
@@ -314,15 +301,13 @@ Rules:
         return results
 
 
-# ──────────────────────────────────────────────────────────────────────────────
-# CLI Test Runner (python app/rag_pipeline.py)
-# ──────────────────────────────────────────────────────────────────────────────
+# CLI Test Runner
 
 if __name__ == "__main__":
     import sys
     logging.basicConfig(level=logging.INFO, format="%(levelname)s: %(message)s")
 
-    print("🔧 Initializing RAG Pipeline...")
+    print("Initializing RAG Pipeline...")
     pipeline = RAGPipeline()
 
     test_question = (
@@ -331,10 +316,10 @@ if __name__ == "__main__":
         else "What is retrieval-augmented generation and how does it reduce hallucinations?"
     )
 
-    print(f"\n❓ Question: {test_question}\n")
+    print(f"\nQuestion: {test_question}\n")
     result = pipeline.query(test_question)
 
-    print(f"✅ Answer:\n{result.answer}\n")
-    print(f"📄 Sources: {result.sources}")
-    print(f"🔢 Tokens: {result.input_tokens} in / {result.output_tokens} out")
-    print(f"⏱️  Retrieval: {result.retrieval_time_ms:.1f}ms | Generation: {result.generation_time_ms:.1f}ms")
+    print(f"Answer:\n{result.answer}\n")
+    print(f"Sources: {result.sources}")
+    print(f"Tokens: {result.input_tokens} in / {result.output_tokens} out")
+    print(f"Retrieval: {result.retrieval_time_ms:.1f}ms | Generation: {result.generation_time_ms:.1f}ms")

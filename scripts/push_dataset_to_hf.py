@@ -68,13 +68,13 @@ def push_to_hub(repo_id: str, dataset_path: Path, private: bool = False) -> None
 
     # Create HF Dataset object
     hf_dataset = Dataset.from_list(samples)
-    print(f"\n📊 Dataset schema:")
+    print(f"\nDataset schema:")
     print(f"   Features: {list(hf_dataset.features.keys())}")
     print(f"   Samples: {len(hf_dataset)}")
 
     # Push to Hub
     visibility = "private" if private else "public"
-    print(f"\n🚀 Pushing to HF Hub: {repo_id} ({visibility})...")
+    print(f"\nPushing to HF Hub: {repo_id} ({visibility})...")
 
     try:
         hf_dataset.push_to_hub(
