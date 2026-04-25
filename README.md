@@ -48,6 +48,14 @@ rag-eval run
 rag-eval report
 ```
 
+### Try the Hallucination Demo 🚨
+Want to see `rag-eval` catch a hallucinating AI in real-time? We built a cinematic terminal demo that intentionally forces our mock RAG pipeline to hallucinate an answer about "RLHF", proving that the quality gate works:
+
+```bash
+# Make sure GROQ_API_KEY is exported, then run:
+python examples/demo.py
+```
+
 ## GitHub Actions Setup
 
 Add this workflow to `.github/workflows/rag_eval.yml`:
