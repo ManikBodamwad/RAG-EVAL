@@ -19,7 +19,7 @@ You ship a RAG chatbot. A teammate changes the prompt template. The retriever no
 
 When a pull request is opened, the GitHub Action:
 
-1. Loads a **golden evaluation dataset** (from Hugging Face or a local `.jsonl` file)
+1. Loads a curated **test dataset** (from Hugging Face or a local `.jsonl` file)
 2. Runs each question through your **RAG pipeline**
 3. Evaluates outputs using **Ragas metrics** with a Groq LLM judge
 4. Computes a custom **Token Efficiency** metric (quality per output token)
@@ -115,7 +115,7 @@ dataset:
 │                  GitHub Actions CI                   │
 ├─────────────────────────────────────────────────────┤
 │                                                     │
-│  Golden Dataset (HF Hub / local JSONL)              │
+│  Test Dataset (HF Hub / local JSONL)                │
 │         │                                           │
 │         ▼                                           │
 │  RAG Pipeline (FAISS + Groq LLM via LiteLLM)       │
