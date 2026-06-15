@@ -105,7 +105,7 @@ model:
   embeddings: "sentence-transformers/all-MiniLM-L6-v2"
 
 dataset:
-  hf_repo: "manikbodamwad/rag-eval-golden"
+  hf_repo: "Manik24/rag-eval-golden"
 ```
 
 ## Architecture
@@ -191,7 +191,7 @@ The evaluator will import your class, call `init()` once, then call `query()` fo
 - **LLM Provider**: [Groq](https://console.groq.com/) via [LiteLLM](https://github.com/BerriAI/litellm) (hot-swappable to OpenAI, Anthropic, etc.)
 - **Embeddings**: [sentence-transformers](https://www.sbert.net/) (local, no API calls)
 - **Vector Store**: [FAISS](https://github.com/facebookresearch/faiss) (CPU, local)
-- **Dataset**: [Hugging Face Datasets](https://huggingface.co/datasets/manikbodamwad/rag-eval-golden)
+- **Dataset**: [Hugging Face Datasets](https://huggingface.co/datasets/Manik24/rag-eval-golden)
 - **Observability**: [Grafana Cloud](https://grafana.com/) via Influx Line Protocol
 - **CLI**: [Click](https://click.palletsprojects.com/) + [Rich](https://github.com/Textualize/rich)
 
@@ -217,7 +217,7 @@ python -m pytest tests/
 
 ## Test Dataset
 
-The default test set is hosted at [`manikbodamwad/rag-eval-golden`](https://huggingface.co/datasets/manikbodamwad/rag-eval-golden) on Hugging Face. To use your own dataset, create a JSONL file with the following schema:
+The default test set is hosted at [`Manik24/rag-eval-golden`](https://huggingface.co/datasets/Manik24/rag-eval-golden) on Hugging Face. To use your own dataset, create a JSONL file with the following schema:
 
 ```jsonl
 {"question": "What is X?", "ground_truth": "X is ...", "reference_context": "The passage that answers this..."}

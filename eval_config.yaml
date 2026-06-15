@@ -55,7 +55,7 @@ model:
 # ─────────────────────────────────────────────────────────────────
 dataset:
   # Hugging Face Hub dataset repository (public, no auth needed to load)
-  hf_repo: "manikbodamwad/rag-eval-golden"
+  hf_repo: "Manik24/rag-eval-golden"
   split: "train"
   # Fallback to local file if HF Hub is unavailable
   local_fallback: "golden_dataset.jsonl"
