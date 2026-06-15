@@ -2,7 +2,7 @@
 
 A CI/CD-integrated evaluation pipeline for RAG systems. 
 
-[![PyPI version](https://badge.fury.io/py/rag-eval.svg)](https://badge.fury.io/py/rag-eval)
+[![PyPI version](https://badge.fury.io/py/rag-eval-gate.svg)](https://badge.fury.io/py/rag-eval-gate)
 [![Python 3.10+](https://img.shields.io/badge/python-3.10+-blue.svg)](https://www.python.org/downloads/)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
 [![RAG Eval CI](https://github.com/manikbodamwad/rag-eval/actions/workflows/rag_eval.yml/badge.svg)](https://github.com/manikbodamwad/rag-eval/actions/workflows/rag_eval.yml)
@@ -36,7 +36,7 @@ The default LLM Judge is `groq/llama-3.3-70b-versatile` via LiteLLM.
 
 ```bash
 # Install
-pip install rag-eval
+pip install rag-eval-gate
 
 # Set API key
 export GROQ_API_KEY="your_api_key"
@@ -73,7 +73,7 @@ jobs:
       - uses: actions/checkout@v4
       - uses: actions/setup-python@v5
         with: { python-version: "3.11" }
-      - run: pip install rag-eval
+      - run: pip install rag-eval-gate
       - run: rag-eval run --config eval_config.yaml
         env:
           GROQ_API_KEY: ${{ secrets.GROQ_API_KEY }}
