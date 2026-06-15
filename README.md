@@ -1,58 +1,65 @@
-# rag-eval
+# rag-eval-gate
 
-A CI/CD-integrated evaluation pipeline for RAG systems. 
+A CI/CD-integrated evaluation pipeline that acts as a **quality gate** for RAG (Retrieval-Augmented Generation) systems. Block bad PRs before they ship hallucinating AI to production.
 
-[![PyPI version](https://badge.fury.io/py/rag-eval-gate.svg)](https://badge.fury.io/py/rag-eval-gate)
+[![PyPI version](https://badge.fury.io/py/rag-eval-gate.svg)](https://pypi.org/project/rag-eval-gate/)
 [![Python 3.10+](https://img.shields.io/badge/python-3.10+-blue.svg)](https://www.python.org/downloads/)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
-[![RAG Eval CI](https://github.com/manikbodamwad/rag-eval/actions/workflows/rag_eval.yml/badge.svg)](https://github.com/manikbodamwad/rag-eval/actions/workflows/rag_eval.yml)
+[![Tests](https://github.com/ManikBodamwad/RAG-EVAL/actions/workflows/rag_eval.yml/badge.svg)](https://github.com/ManikBodamwad/RAG-EVAL/actions/workflows/rag_eval.yml)
 
-`rag-eval` acts as a quality gate for your RAG applications. It evaluates Pull Requests and can block merges if the output quality drops below defined thresholds.
+---
 
-## How it works
+## The Problem
 
-When a pull request is opened, the Github Action:
-1. Installs the `rag-eval` package.
-2. Loads a golden evaluation dataset (from Hugging Face or a local file).
-3. Runs the dataset through your Mock RAG pipeline.
-4. Evaluates the outputs using Ragas metrics.
-5. Checks scores against your defined thresholds in `eval_config.yaml`.
-6. Pushes metrics to Grafana for trend tracking.
-7. Posts a summary comment on the Pull Request.
-8. Fails the CI job if any metric drops below the threshold.
+You ship a RAG chatbot. A teammate changes the prompt template. The retriever now returns irrelevant context. The LLM starts hallucinating. Nobody catches it until users complain.
+
+**rag-eval-gate** prevents this by running automated evaluations on every Pull Request — just like unit tests, but for AI output quality.
+
+## How It Works
+
+When a pull request is opened, the GitHub Action:
+
+1. Loads a **golden evaluation dataset** (from Hugging Face or a local `.jsonl` file)
+2. Runs each question through your **RAG pipeline**
+3. Evaluates outputs using **Ragas metrics** with a Groq LLM judge
+4. Computes a custom **Token Efficiency** metric (quality per output token)
+5. Checks scores against **configurable thresholds** in `eval_config.yaml`
+6. Pushes metrics to **Grafana Cloud** for trend tracking
+7. Posts a **formatted score table** as a PR comment
+8. **Fails the CI job** if any metric drops below threshold — blocking the merge
 
 ## Evaluation Metrics
 
 | Metric | What It Measures | Default Threshold |
 |--------|------------------|-------------------|
-| **Faithfulness** | Answers are grounded in retrieved context | ≥ 0.75 |
-| **Context Relevance** | Retrieved context quality | ≥ 0.70 |
-| **Answer Correctness** | Accuracy vs ground truth | ≥ 0.65 |
-| **Token Efficiency** | `correctness / log(1 + tokens)` | ≥ 0.50 |
+| **Faithfulness** | Are answers grounded in retrieved context? | ≥ 0.75 |
+| **Context Relevance** | Is the retrieved context relevant to the question? | ≥ 0.70 |
+| **Answer Correctness** | How accurate is the answer vs ground truth? | ≥ 0.65 |
+| **Token Efficiency** | Quality per output token (`correctness / log(1 + tokens)`) | ≥ 0.50 |
 
-The default LLM Judge is `groq/llama-3.3-70b-versatile` via LiteLLM.
+The default LLM Judge is `groq/llama-3.3-70b-versatile` via LiteLLM — fast, free, and swappable.
 
 ## Quick Start
 
 ```bash
-# Install
+# Install from PyPI
 pip install rag-eval-gate
 
-# Set API key
+# Set your Groq API key (free at console.groq.com)
 export GROQ_API_KEY="your_api_key"
 
 # Run evaluation
 rag-eval run
 
-# View report
+# View formatted report
 rag-eval report
 ```
 
 ### Try the Hallucination Demo 🚨
-Want to see `rag-eval` catch a hallucinating AI in real-time? We built a cinematic terminal demo that intentionally forces our mock RAG pipeline to hallucinate an answer about "RLHF", proving that the quality gate works:
+
+See `rag-eval-gate` catch a hallucinating AI in real-time. This demo intentionally forces the mock RAG pipeline to hallucinate an answer about "RLHF", proving that the quality gate works:
 
 ```bash
-# Make sure GROQ_API_KEY is exported, then run:
 python examples/demo.py
 ```
 
@@ -79,11 +86,11 @@ jobs:
           GROQ_API_KEY: ${{ secrets.GROQ_API_KEY }}
 ```
 
-Ensure you set `GROQ_API_KEY` in your GitHub repository secrets.
+Set `GROQ_API_KEY` in your GitHub repository secrets (Settings → Secrets → Actions).
 
 ## Configuration
 
-You can customize the passing thresholds and dataset endpoints in `eval_config.yaml`:
+Customize thresholds and model settings in `eval_config.yaml`:
 
 ```yaml
 thresholds:
@@ -92,15 +99,58 @@ thresholds:
   answer_correctness_min: 0.65
   token_efficiency_min: 0.50
 
+model:
+  judge: "groq/llama-3.3-70b-versatile"
+  rag_generator: "groq/llama-3.3-70b-versatile"
+  embeddings: "sentence-transformers/all-MiniLM-L6-v2"
+
 dataset:
-  hf_repo: "manikbodamwad/rag-eval-golden" 
+  hf_repo: "manikbodamwad/rag-eval-golden"
 ```
+
+## Architecture
+
+```
+┌─────────────────────────────────────────────────────┐
+│                  GitHub Actions CI                   │
+├─────────────────────────────────────────────────────┤
+│                                                     │
+│  Golden Dataset (HF Hub / local JSONL)              │
+│         │                                           │
+│         ▼                                           │
+│  RAG Pipeline (FAISS + Groq LLM via LiteLLM)       │
+│         │                                           │
+│         ▼                                           │
+│  Ragas Evaluation (Faithfulness, Relevance, etc.)   │
+│         │                                           │
+│         ▼                                           │
+│  Regression Gate (pass/fail vs thresholds)          │
+│         │                                           │
+│    ┌────┴────┐                                      │
+│    ▼         ▼                                      │
+│  ✅ Pass   ❌ Fail → Block PR merge                 │
+│    │         │                                      │
+│    ▼         ▼                                      │
+│  PR Comment + Grafana Metrics Push                  │
+│                                                     │
+└─────────────────────────────────────────────────────┘
+```
+
+## Tech Stack
+
+- **Evaluation**: [Ragas](https://github.com/explodinggradients/ragas) for LLM-as-judge metrics
+- **LLM Provider**: [Groq](https://console.groq.com/) via [LiteLLM](https://github.com/BerriAI/litellm) (hot-swappable to OpenAI, Anthropic, etc.)
+- **Embeddings**: [sentence-transformers](https://www.sbert.net/) (local, no API calls)
+- **Vector Store**: [FAISS](https://github.com/facebookresearch/faiss) (CPU, local)
+- **Dataset**: [Hugging Face Datasets](https://huggingface.co/datasets/manikbodamwad/rag-eval-golden)
+- **Observability**: [Grafana Cloud](https://grafana.com/) via Influx Line Protocol
+- **CLI**: [Click](https://click.palletsprojects.com/) + [Rich](https://github.com/Textualize/rich)
 
 ## Local Development
 
 ```bash
-git clone https://github.com/manikbodamwad/rag-eval
-cd rag-eval
+git clone https://github.com/ManikBodamwad/RAG-EVAL.git
+cd RAG-EVAL
 python -m venv .venv && source .venv/bin/activate
 pip install -e ".[dev]"
 
@@ -118,7 +168,7 @@ python -m pytest tests/
 
 ## Golden Dataset
 
-The default test set is pushed to `manikbodamwad/rag-eval-golden` on Hugging Face. To use your own dataset, create a JSONL file with the following schema:
+The default test set is hosted at [`manikbodamwad/rag-eval-golden`](https://huggingface.co/datasets/manikbodamwad/rag-eval-golden) on Hugging Face. To use your own dataset, create a JSONL file with the following schema:
 
 ```jsonl
 {"question": "What is X?", "ground_truth": "X is ...", "reference_context": "The passage that answers this..."}

@@ -51,9 +51,9 @@ dev = [
 rag-eval = "rag_eval.cli:cli"
 
 [project.urls]
-Homepage = "https://github.com/manikbodamwad/rag-eval"
-Repository = "https://github.com/manikbodamwad/rag-eval"
-Issues = "https://github.com/manikbodamwad/rag-eval/issues"
+Homepage = "https://github.com/ManikBodamwad/RAG-EVAL"
+Repository = "https://github.com/ManikBodamwad/RAG-EVAL"
+Issues = "https://github.com/ManikBodamwad/RAG-EVAL/issues"
 
 [tool.setuptools.packages.find]
 where = ["."]
