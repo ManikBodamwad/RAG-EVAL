@@ -111,6 +111,9 @@ rag-eval run
 
 # View formatted report
 rag-eval report
+
+# Run unit tests
+python -m pytest tests/
 ```
 
 ## Golden Dataset
