@@ -152,22 +152,72 @@ class RagEvaluator:
         logger.info(f"Initializing LLM judge: {judge_model}")
         return llm_factory(model=judge_model), judge_model
 
+    def _load_pipeline_class(self):
+        """
+        Dynamically load the RAG pipeline class from config.
+
+        Reads ``pipeline.class`` from eval_config.yaml (a dotted Python import path).
+        Falls back to ``app.rag_pipeline.RAGPipeline`` for backward compatibility.
+
+        The class must be a subclass of ``rag_eval.base.BaseRAGPipeline``.
+        """
+        import importlib
+        from rag_eval.base import BaseRAGPipeline
+
+        dotted_path = (
+            self.config.get("pipeline", {}).get("class")
+            or "app.rag_pipeline.RAGPipeline"
+        )
+
+        logger.info(f"Loading pipeline class: {dotted_path}")
+
+        try:
+            module_path, class_name = dotted_path.rsplit(".", 1)
+        except ValueError:
+            raise ValueError(
+                f"Invalid pipeline class path: '{dotted_path}'. "
+                f"Expected a dotted path like 'my_module.MyPipeline'."
+            )
+
+        # Add project root to sys.path so local modules are importable
+        import sys
+        project_root = str(self.config_path.parent)
+        if project_root not in sys.path:
+            sys.path.insert(0, project_root)
+
+        try:
+            module = importlib.import_module(module_path)
+        except ModuleNotFoundError as e:
+            raise ModuleNotFoundError(
+                f"Could not import module '{module_path}' for pipeline class '{dotted_path}'.\n"
+                f"Make sure the module is installed or on PYTHONPATH.\n"
+                f"Original error: {e}"
+            ) from e
+
+        try:
+            pipeline_cls = getattr(module, class_name)
+        except AttributeError:
+            raise AttributeError(
+                f"Module '{module_path}' has no class '{class_name}'.\n"
+                f"Check the 'pipeline.class' value in your eval_config.yaml."
+            )
+
+        if not (isinstance(pipeline_cls, type) and issubclass(pipeline_cls, BaseRAGPipeline)):
+            raise TypeError(
+                f"Pipeline class '{dotted_path}' must be a subclass of "
+                f"rag_eval.BaseRAGPipeline. Got: {type(pipeline_cls)}"
+            )
+
+        return pipeline_cls
+
     def _run_rag_pipeline(self, samples: list[dict]) -> list[dict]:
         """
-        Run each golden dataset question through the RAG pipeline.
+        Run each test dataset question through the RAG pipeline.
         Returns a list of dicts with keys: question, answer, contexts, ground_truth, token_counts.
         """
-        # Lazy import to avoid circular imports
-        import sys
-        from pathlib import Path
-
-        # Add the project root to path so app/ is importable
-        project_root = self.config_path.parent
-        sys.path.insert(0, str(project_root))
-
-        from app.rag_pipeline import RAGPipeline
-        pipeline = RAGPipeline()
-        pipeline.build_index()  # Build once, reuse for all questions
+        pipeline_cls = self._load_pipeline_class()
+        pipeline = pipeline_cls()
+        pipeline.init()
 
         rag_samples = []
         for i, sample in enumerate(samples):

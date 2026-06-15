@@ -1,10 +1,22 @@
 # ─────────────────────────────────────────────────────────────────
 # eval_config.yaml — RAG Evaluation Regression Gate Configuration
 # ─────────────────────────────────────────────────────────────────
+
+# ─────────────────────────────────────────────────────────────────
+# Pipeline Configuration
+# ─────────────────────────────────────────────────────────────────
+pipeline:
+  # Dotted Python import path to your RAG pipeline class.
+  # Must be a subclass of rag_eval.BaseRAGPipeline.
+  # Default: "app.rag_pipeline.RAGPipeline" (the built-in demo pipeline)
+  class: "app.rag_pipeline.RAGPipeline"
+
+# ─────────────────────────────────────────────────────────────────
+# Threshold Configuration
+# ─────────────────────────────────────────────────────────────────
 # These thresholds define the quality bar for the CI gate.
 # If ANY metric falls below its threshold, the GitHub Actions
 # workflow exits with code 1, blocking the PR from merging.
-# ─────────────────────────────────────────────────────────────────
 
 thresholds:
   # Faithfulness: Is the answer grounded in retrieved context?

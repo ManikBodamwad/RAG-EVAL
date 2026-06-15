@@ -136,6 +136,55 @@ dataset:
 └─────────────────────────────────────────────────────┘
 ```
 
+## Bring Your Own Pipeline
+
+The library ships with a demo RAG pipeline, but you can plug in your own. Subclass `BaseRAGPipeline`, implement two methods, and point your config at it:
+
+```python
+# my_pipeline.py
+from rag_eval import BaseRAGPipeline, RAGResult
+
+class MyPipeline(BaseRAGPipeline):
+    def init(self):
+        """Called once before evaluation starts. Load your models here."""
+        self.db = load_my_vectorstore()
+        self.llm = load_my_llm()
+
+    def query(self, question: str) -> RAGResult:
+        """Called for each question in the test dataset."""
+        docs = self.db.search(question, k=3)
+        answer = self.llm.generate(question, docs)
+        return RAGResult(
+            question=question,
+            answer=answer,
+            contexts=[d.text for d in docs],
+            input_tokens=...,   # optional, for token efficiency metric
+            output_tokens=...,  # optional, for token efficiency metric
+        )
+```
+
+Then set `pipeline.class` in your `eval_config.yaml`:
+
+```yaml
+pipeline:
+  class: "my_pipeline.MyPipeline"
+
+thresholds:
+  faithfulness_min: 0.75
+  context_relevance_min: 0.70
+  answer_correctness_min: 0.65
+  token_efficiency_min: 0.50
+```
+
+Run it:
+
+```bash
+export GROQ_API_KEY="..."
+rag-eval run --config eval_config.yaml
+```
+
+The evaluator will import your class, call `init()` once, then call `query()` for each test question.
+
 ## Tech Stack
 
 - **Evaluation**: [Ragas](https://github.com/explodinggradients/ragas) for LLM-as-judge metrics
@@ -166,7 +215,7 @@ rag-eval report
 python -m pytest tests/
 ```
 
-## Golden Dataset
+## Test Dataset
 
 The default test set is hosted at [`manikbodamwad/rag-eval-golden`](https://huggingface.co/datasets/manikbodamwad/rag-eval-golden) on Hugging Face. To use your own dataset, create a JSONL file with the following schema:
 

@@ -2,6 +2,7 @@
 app/rag_pipeline.py
 
 A standard Retrieval-Augmented Generation pipeline used as the evaluation target.
+Extends BaseRAGPipeline so it can be loaded by the evaluator's plugin system.
 """
 
 from __future__ import annotations
@@ -13,6 +14,8 @@ import time
 from dataclasses import dataclass, field
 from pathlib import Path
 from typing import Optional
+
+from rag_eval.base import BaseRAGPipeline, RAGResult
 
 logger = logging.getLogger(__name__)
 
@@ -40,28 +43,29 @@ except ImportError as e:
 
 
 
+# RAGResult is imported from rag_eval.base
+# Extended result with extra timing/source metadata for the demo pipeline
+
 @dataclass
-class RAGResult:
-    """Structured output from a single RAG pipeline query."""
-    question: str
-    answer: str
-    contexts: list[str]          # Retrieved document chunks (k items)
-    input_tokens: int = 0        # Prompt token count (for cost tracking)
-    output_tokens: int = 0       # Completion token count (for cost tracking)
+class RAGResultExtended(RAGResult):
+    """Extended RAGResult with timing and source metadata for the demo pipeline."""
     retrieval_time_ms: float = 0.0
     generation_time_ms: float = 0.0
     model: str = ""
-    sources: list[str] = field(default_factory=list)  # Source filenames
+    sources: list[str] = field(default_factory=list)
 
 
 
 
-class RAGPipeline:
+class RAGPipeline(BaseRAGPipeline):
     """
     A mock RAG pipeline over an AI/ML concept corpus.
 
+    Extends BaseRAGPipeline so it can be used with the rag-eval-gate evaluator.
+
     Usage:
         pipeline = RAGPipeline()
+        pipeline.init()
         result = pipeline.query("What is retrieval-augmented generation?")
         print(result.answer)
         print(result.contexts)
@@ -106,6 +110,10 @@ Rules:
         self.top_k = top_k
         self._vectorstore: Optional[FAISS] = None
         self._embeddings: Optional[HuggingFaceEmbeddings] = None
+
+    def init(self) -> None:
+        """Initialize the pipeline by building the FAISS index."""
+        self.build_index()
 
 
 
@@ -265,7 +273,7 @@ Rules:
             question, contexts
         )
 
-        return RAGResult(
+        return RAGResultExtended(
             question=question,
             answer=answer,
             contexts=contexts,
@@ -277,7 +285,7 @@ Rules:
             sources=sources,
         )
 
-    def batch_query(self, questions: list[str]) -> list[RAGResult]:
+    def batch_query(self, questions: list[str]) -> list[RAGResultExtended]:
         """
         Run the RAG pipeline on multiple questions sequentially.
         Reuses the same FAISS index across all queries.
@@ -292,7 +300,7 @@ Rules:
             except Exception as e:
                 logger.error(f"Failed to process question {i+1}: {e}")
                 # Return a failed result rather than crashing the whole batch
-                results.append(RAGResult(
+                results.append(RAGResultExtended(
                     question=question,
                     answer=f"ERROR: {str(e)}",
                     contexts=[],

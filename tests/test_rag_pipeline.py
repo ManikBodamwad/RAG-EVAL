@@ -3,7 +3,8 @@ from pathlib import Path
 from unittest.mock import MagicMock, patch
 from langchain_core.documents import Document
 
-from app.rag_pipeline import RAGPipeline, RAGResult
+from app.rag_pipeline import RAGPipeline, RAGResultExtended
+from rag_eval.base import BaseRAGPipeline, RAGResult
 
 
 @pytest.fixture
@@ -114,6 +115,7 @@ def test_query_flow(mock_gen, mock_ret):
     assert res.contexts == ["Ctx"]
     assert res.input_tokens == 10
     assert res.output_tokens == 20
+    # Extended fields from RAGResultExtended
     assert res.retrieval_time_ms == 5.0
     assert res.generation_time_ms == 200.0
 
@@ -124,7 +126,7 @@ def test_batch_query(mock_query, mock_ensure):
     pipeline = RAGPipeline()
     
     # Return valid result for Q1, and fail for Q2
-    res_success = RAGResult(question="Q1", answer="A1", contexts=["C1"])
+    res_success = RAGResultExtended(question="Q1", answer="A1", contexts=["C1"])
     mock_query.side_effect = [res_success, Exception("Generation failed")]
     
     results = pipeline.batch_query(["Q1", "Q2"])
@@ -134,3 +136,70 @@ def test_batch_query(mock_query, mock_ensure):
     assert results[1].answer == "ERROR: Generation failed"
     assert results[1].contexts == []
     mock_ensure.assert_called_once()
+
+
+# Plugin system tests
+
+def test_rag_pipeline_is_base_subclass():
+    """Verify that RAGPipeline is a proper subclass of BaseRAGPipeline."""
+    assert issubclass(RAGPipeline, BaseRAGPipeline)
+
+
+def test_rag_result_base_fields():
+    """Verify RAGResult has the required fields for the evaluator."""
+    r = RAGResult(question="Q", answer="A", contexts=["C"])
+    assert r.question == "Q"
+    assert r.answer == "A"
+    assert r.contexts == ["C"]
+    assert r.input_tokens == 0
+    assert r.output_tokens == 0
+
+
+def test_rag_result_extended_inherits():
+    """Verify RAGResultExtended has both base and extended fields."""
+    r = RAGResultExtended(
+        question="Q", answer="A", contexts=["C"],
+        input_tokens=10, output_tokens=20,
+        retrieval_time_ms=5.0, generation_time_ms=100.0,
+        model="test-model", sources=["doc1"],
+    )
+    assert isinstance(r, RAGResult)
+    assert r.retrieval_time_ms == 5.0
+    assert r.model == "test-model"
+
+
+def test_load_pipeline_class_valid():
+    """Test that _load_pipeline_class can load the demo pipeline."""
+    from rag_eval.evaluator import RagEvaluator
+    evaluator = RagEvaluator()
+    pipeline_cls = evaluator._load_pipeline_class()
+    assert pipeline_cls is RAGPipeline
+    assert issubclass(pipeline_cls, BaseRAGPipeline)
+
+
+def test_load_pipeline_class_invalid_path():
+    """Test that _load_pipeline_class raises on a bad dotted path."""
+    from rag_eval.evaluator import RagEvaluator
+    evaluator = RagEvaluator()
+    evaluator.config["pipeline"] = {"class": "NoDots"}
+    with pytest.raises(ValueError, match="Invalid pipeline class path"):
+        evaluator._load_pipeline_class()
+
+
+def test_load_pipeline_class_missing_module():
+    """Test that _load_pipeline_class raises on a nonexistent module."""
+    from rag_eval.evaluator import RagEvaluator
+    evaluator = RagEvaluator()
+    evaluator.config["pipeline"] = {"class": "nonexistent_module.FakePipeline"}
+    with pytest.raises(ModuleNotFoundError, match="Could not import module"):
+        evaluator._load_pipeline_class()
+
+
+def test_load_pipeline_class_not_subclass():
+    """Test that _load_pipeline_class rejects classes that don't extend BaseRAGPipeline."""
+    from rag_eval.evaluator import RagEvaluator
+    evaluator = RagEvaluator()
+    # pathlib.Path exists and is a class, but not a BaseRAGPipeline subclass
+    evaluator.config["pipeline"] = {"class": "pathlib.Path"}
+    with pytest.raises(TypeError, match="must be a subclass"):
+        evaluator._load_pipeline_class()
