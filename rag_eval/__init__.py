@@ -4,7 +4,7 @@ rag_eval — Automated RAG Evaluation Pipeline
 CI/CD-integrated quality gate for RAG systems using Ragas + Groq LLM judge.
 """
 
-__version__ = "0.1.0"
+__version__ = "0.2.0"
 __author__ = "Manik Bodamwad"
 
 from rag_eval.base import BaseRAGPipeline, RAGResult
