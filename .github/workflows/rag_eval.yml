@@ -86,15 +86,19 @@ jobs:
 
       # ── 6. Validate API Key ──────────────────────────────────────────────────
       - name: Validate environment secrets
+        id: validate
         run: |
           if [ -z "$GROQ_API_KEY" ]; then
-            echo "❌ GROQ_API_KEY secret not set. Add it in Settings → Secrets → Actions"
-            exit 1
+            echo "⚠️  GROQ_API_KEY secret not set. Skipping evaluation."
+            echo "skip_eval=true" >> $GITHUB_OUTPUT
+          else
+            echo "✅ Required secrets validated"
+            echo "skip_eval=false" >> $GITHUB_OUTPUT
           fi
-          echo "✅ Required secrets validated"
 
       # ── 7. Run Evaluation (continue on error to post PR comment regardless) ──
       - name: Run RAG evaluation pipeline
+        if: steps.validate.outputs.skip_eval != 'true'
         id: eval
         continue-on-error: true   # We handle the exit code manually in step 10
         run: |
@@ -112,7 +116,7 @@ jobs:
       # Capture actual exit code for gate decision
       - name: Capture evaluation result
         id: gate
-        if: always()
+        if: always() && steps.validate.outputs.skip_eval != 'true'
         run: |
           if [ -f eval_report.json ]; then
             OVERALL_PASS=$(python -c "import json; d=json.load(open('eval_report.json')); print(str(d.get('overall_pass','false')).lower())")
@@ -139,7 +143,7 @@ jobs:
 
       # ── 8. Post PR Comment ───────────────────────────────────────────────────
       - name: Post evaluation results as PR comment
-        if: always() && github.event_name == 'pull_request'
+        if: always() && github.event_name == 'pull_request' && steps.validate.outputs.skip_eval != 'true'
         uses: actions/github-script@v7
         with:
           github-token: ${{ secrets.GITHUB_TOKEN }}
@@ -209,7 +213,7 @@ jobs:
 
       # ── 9. Upload report as CI artifact ─────────────────────────────────────
       - name: Upload evaluation report artifact
-        if: always()
+        if: always() && steps.validate.outputs.skip_eval != 'true'
         uses: actions/upload-artifact@v4
         with:
           name: rag-eval-report-${{ github.run_number }}
@@ -221,7 +225,7 @@ jobs:
       # ── 10. Fail the workflow if regression gate triggered ───────────────────
       # This is the KEY STEP — this is what blocks the PR from merging
       - name: Enforce regression gate
-        if: always()
+        if: always() && steps.validate.outputs.skip_eval != 'true'
         run: |
           OVERALL_PASS="${{ steps.gate.outputs.overall_pass }}"
           REPORT_EXISTS="${{ steps.gate.outputs.report_exists }}"
